@@ -1,0 +1,47 @@
+{
+  "ranks": [
+    {
+      "rank": "New Member",
+      "pointRequirement": 0,
+      "roleId": 1134194679773139026
+    },
+    {
+      "rank": "Sapphire",
+      "pointRequirement": 250,
+      "roleId": 1134193360949760111
+    },
+    {
+      "rank": "Emerald",
+      "pointRequirement": 500,
+      "roleId": 1134194009816961034
+    },
+    {
+      "rank": "Ruby",
+      "pointRequirement": 750,
+      "roleId": 1134194105648414810
+    },
+    {
+      "rank": "Diamond",
+      "pointRequirement": 1000,
+      "roleId": 1134194322678489097
+    },
+    {
+      "rank": "Dragonstone",
+      "pointRequirement": 1500,
+      "roleId": 1134194437052964915
+    },
+    {
+      "rank": "Onyx",
+      "pointRequirement": 2250,
+      "roleId": 1134194518372139078
+    },
+    {
+      "rank": "Zenyte",
+      "pointRequirement": 3500,
+      "roleId": 1134194577679601674
+    }
+  ],
+  "weeklyHost": 50,
+  "weeklyAttendee": 25,
+  "weeklyLimit": 100
+}
