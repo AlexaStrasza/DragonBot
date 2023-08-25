@@ -344,7 +344,8 @@ namespace DragonBot.Commands
                     {
                         Title = $"No History.",
                         Description = $"There was no point history found for {user.Mention}"
-                    })));
+                    }))
+                    { IsEphemeral = true });
                 }
                 else
                 {
