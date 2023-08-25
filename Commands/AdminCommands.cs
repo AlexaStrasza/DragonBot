@@ -426,7 +426,7 @@ namespace DragonBot.Commands
             {
                 DiscordRole newRole = ctx.Guild.GetRole(newRank.RoleId);
                 await member.GrantRoleAsync(newRole);
-                var channel = ctx.Guild.GetChannel(1141378825532473428);
+                var channel = ctx.Guild.GetChannel(1144424054984556595);
 
                 DiscordButtonComponent buttonDelete = new DiscordButtonComponent(ButtonStyle.Success, "deleteMessage", "Confirm Rank Updated Ingame");
                 DiscordMessageBuilder builder = new DiscordMessageBuilder();

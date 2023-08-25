@@ -134,7 +134,7 @@ namespace DragonBot
         private async Task HandleApplyAcceptButtonAsync(DiscordClient sender, ComponentInteractionCreateEventArgs e)
         {
             var member = await e.Guild.GetMemberAsync(e.Interaction.User.Id);
-            if (member.Roles.Contains(e.Guild.GetRole(1138108787128021073))) // check if admin presses button
+            if (IsAdmin(e.Guild, member))
             {
                 ulong AAapplicantId = ulong.Parse(Helper.GetNumbers(e.Message.Embeds[0].Description));
 
@@ -150,7 +150,6 @@ namespace DragonBot
                 if (strings.Length == 4 && strings[3].Contains("<@!"))
                 {
                     referreeId = ulong.Parse(Helper.GetNumbers(strings[3]));
-                    // I need access here to the point distribution service
                     await _clanMemberService.GetOrCreateMemberAsync(referreeId);
                     await _pointDistributionService.ChangePointsAsync(referreeId, 5, "Recruitment Bonus");
                     await _clanMemberService.AddReferral(referreeId);
@@ -160,7 +159,6 @@ namespace DragonBot
                     recruitedFrom = strings[3];
                 }
 
-                // I need access here to the point distribution service
                 await _clanMemberService.GetOrCreateMemberAsync(AAapplicantId, rsn);
                 await _pointDistributionService.ChangePointsAsync(AAapplicantId, 50, "Clan Application Accepted");
 
@@ -202,7 +200,7 @@ namespace DragonBot
 
                 //await applicant.RevokeRoleAsync(e.Guild.GetRole(1133480882972414114));
                 await applicant.GrantRoleAsync(e.Guild.GetRole(1134194679773139026)); // Assign new member role
-                await applicant.GrantRoleAsync(e.Guild.GetRole(1140406825943044246)); // Assign new member role
+                //await applicant.GrantRoleAsync(e.Guild.GetRole(1140406825943044246)); // Assign new member role
                 await applicant.ModifyAsync(e => e.Nickname = rsn); 
             }
             else
@@ -215,14 +213,13 @@ namespace DragonBot
                 };
 
                 await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder(new DiscordMessageBuilder().AddEmbed(embedAcceptError)) { IsEphemeral = true });
-
             }
         }
 
         private async Task HandleApplyDenyButtonAsync(DiscordClient sender, ComponentInteractionCreateEventArgs e)
         {
             var member = await e.Guild.GetMemberAsync(e.Interaction.User.Id);
-            if (member.Roles.Contains(e.Guild.GetRole(1138108787128021073))) // check admin
+            if (IsAdmin(e.Guild, member)) // check admin
             {
                 ulong ADapplicantId = ulong.Parse(Helper.GetNumbers(e.Message.Embeds[0].Description));
 
@@ -287,7 +284,7 @@ namespace DragonBot
         {
             var member = await e.Guild.GetMemberAsync(e.Interaction.User.Id);
             ulong applicantId = ulong.Parse(Helper.GetNumbers(e.Message.Embeds[0].Description));
-            if (e.Interaction.User.Id == applicantId || member.Roles.Contains(e.Guild.GetRole(1138108787128021073))) // check if admin presses button or user who made the application
+            if (e.Interaction.User.Id == applicantId || IsAdmin(e.Guild, member)) // check if admin presses button or user who made the application
             {
                 var embedCancel = new DiscordEmbedBuilder()
                 {
@@ -298,6 +295,15 @@ namespace DragonBot
                 await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder(new DiscordMessageBuilder().AddEmbed(embedCancel)) { IsEphemeral = true });
                 await e.Message.DeleteAsync();
             }
+        }
+
+        private bool IsAdmin(DiscordGuild guild, DiscordMember member)
+        {
+            return member.Roles.Contains(guild.GetRole(1132893402204213351)) ||
+                member.Roles.Contains(guild.GetRole(1133071740797472808)) ||
+                member.Roles.Contains(guild.GetRole(1139575841228070972)) ||
+                member.Roles.Contains(guild.GetRole(1138108787128021073));
+            
         }
 
         private static async Task OnSlashCommandError(SlashCommandsExtension sender, SlashCommandErrorEventArgs e)
@@ -327,13 +333,13 @@ namespace DragonBot
         {
             if (e.Exception is ChecksFailedException)
             {
-                var castedException = (ChecksFailedException)e.Exception; //Casting my ErrorEventArgs as a ChecksFailedException
+                var castedException = (ChecksFailedException)e.Exception;
                 string cooldownTimer = string.Empty;
 
                 foreach (var check in castedException.FailedChecks)
                 {
-                    var cooldown = (CooldownAttribute)check; //The cooldown that has triggered this method
-                    TimeSpan timeLeft = cooldown.GetRemainingCooldown(e.Context); //Getting the remaining time on this cooldown
+                    var cooldown = (CooldownAttribute)check;
+                    TimeSpan timeLeft = cooldown.GetRemainingCooldown(e.Context);
                     cooldownTimer = timeLeft.ToString(@"hh\:mm\:ss");
                 }
 
