@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DSharpPlus.Entities;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -40,6 +41,15 @@ namespace DragonBot.Helpers
 
             // Return the week of our adjusted day
             return CultureInfo.InvariantCulture.Calendar.GetWeekOfYear(time, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
+        }
+
+        public static bool IsAdmin(DiscordGuild guild, DiscordMember member)
+        {
+            return member.Roles.Contains(guild.GetRole(1132893402204213351)) ||
+                member.Roles.Contains(guild.GetRole(1133071740797472808)) ||
+                member.Roles.Contains(guild.GetRole(1139575841228070972)) ||
+                member.Roles.Contains(guild.GetRole(1138108787128021073));
+
         }
     }
 }

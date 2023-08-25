@@ -134,7 +134,7 @@ namespace DragonBot
         private async Task HandleApplyAcceptButtonAsync(DiscordClient sender, ComponentInteractionCreateEventArgs e)
         {
             var member = await e.Guild.GetMemberAsync(e.Interaction.User.Id);
-            if (IsAdmin(e.Guild, member))
+            if (Helper.IsAdmin(e.Guild, member))
             {
                 ulong AAapplicantId = ulong.Parse(Helper.GetNumbers(e.Message.Embeds[0].Description));
 
@@ -219,7 +219,7 @@ namespace DragonBot
         private async Task HandleApplyDenyButtonAsync(DiscordClient sender, ComponentInteractionCreateEventArgs e)
         {
             var member = await e.Guild.GetMemberAsync(e.Interaction.User.Id);
-            if (IsAdmin(e.Guild, member)) // check admin
+            if (Helper.IsAdmin(e.Guild, member)) // check admin
             {
                 ulong ADapplicantId = ulong.Parse(Helper.GetNumbers(e.Message.Embeds[0].Description));
 
@@ -284,7 +284,7 @@ namespace DragonBot
         {
             var member = await e.Guild.GetMemberAsync(e.Interaction.User.Id);
             ulong applicantId = ulong.Parse(Helper.GetNumbers(e.Message.Embeds[0].Description));
-            if (e.Interaction.User.Id == applicantId || IsAdmin(e.Guild, member)) // check if admin presses button or user who made the application
+            if (e.Interaction.User.Id == applicantId || Helper.IsAdmin(e.Guild, member)) // check if admin presses button or user who made the application
             {
                 var embedCancel = new DiscordEmbedBuilder()
                 {
@@ -295,15 +295,6 @@ namespace DragonBot
                 await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder(new DiscordMessageBuilder().AddEmbed(embedCancel)) { IsEphemeral = true });
                 await e.Message.DeleteAsync();
             }
-        }
-
-        private bool IsAdmin(DiscordGuild guild, DiscordMember member)
-        {
-            return member.Roles.Contains(guild.GetRole(1132893402204213351)) ||
-                member.Roles.Contains(guild.GetRole(1133071740797472808)) ||
-                member.Roles.Contains(guild.GetRole(1139575841228070972)) ||
-                member.Roles.Contains(guild.GetRole(1138108787128021073));
-            
         }
 
         private static async Task OnSlashCommandError(SlashCommandsExtension sender, SlashCommandErrorEventArgs e)
