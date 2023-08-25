@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.Design;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -17,7 +18,12 @@ namespace DragonBot.Context
         public DbSet<Vouch> Vouches { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-            => optionsBuilder.UseSqlite("Data Source=C:\\Users\\sjors\\Desktop\\DragonBot\\Dragon.db");
+        {
+            string solutionDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            string databasePath = Path.Combine(solutionDirectory, "Dragon.db");
+
+            optionsBuilder.UseSqlite($"Data Source={databasePath}");
+        }
 
         protected override void OnModelCreating(ModelBuilder model)
         {
@@ -30,8 +36,10 @@ namespace DragonBot.Context
     {
         public DragonContext CreateDbContext(string[] args)
         {
-            var optionsBuilder = new DbContextOptionsBuilder<DragonContext>();
-            optionsBuilder.UseSqlite("Data Source=C:\\Users\\sjors\\Desktop\\DragonBot\\Dragon.db");
+            var optionsBuilder = new DbContextOptionsBuilder<DragonContext>(); string solutionDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            string databasePath = Path.Combine(solutionDirectory, "Dragon.db");
+
+            optionsBuilder.UseSqlite($"Data Source={databasePath}");
             //optionsBuilder.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=DragonContext;Trusted_Connection=True;MultipleActiveResultSets=true",
             //    x => x.MigrationsAssembly("DragonBot"));
             return new DragonContext(optionsBuilder.Options);

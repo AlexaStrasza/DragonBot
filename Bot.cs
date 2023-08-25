@@ -90,8 +90,10 @@ namespace DragonBot
             {
                 Services = _services
             });
-
+            
+            slashCommandsConfig.RegisterCommands<AdminCommands>(1132841029192658954);
             slashCommandsConfig.RegisterCommands<AdminCommands>(1133706557104861294);
+            slashCommandsConfig.RegisterCommands<UserCommands>(1132841029192658954);
             slashCommandsConfig.RegisterCommands<UserCommands>(1133706557104861294);
             //Commands.RegisterCommands<TeamCommands>();
             slashCommandsConfig.SlashCommandErrored += OnSlashCommandError;
@@ -198,7 +200,7 @@ namespace DragonBot
 
                 DiscordMember applicant = await e.Guild.GetMemberAsync(AAapplicantId);
 
-                await applicant.RevokeRoleAsync(e.Guild.GetRole(1138502496147480680));
+                //await applicant.RevokeRoleAsync(e.Guild.GetRole(1133480882972414114));
                 await applicant.GrantRoleAsync(e.Guild.GetRole(1134194679773139026)); // Assign new member role
                 await applicant.GrantRoleAsync(e.Guild.GetRole(1140406825943044246)); // Assign new member role
                 await applicant.ModifyAsync(e => e.Nickname = rsn); 

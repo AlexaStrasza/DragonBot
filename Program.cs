@@ -2,6 +2,7 @@
 using DragonBot.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 
 namespace DragonBot
 {
@@ -11,9 +12,12 @@ namespace DragonBot
         {
             var services = new ServiceCollection();
 
+            string solutionDirectory = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+            string databasePath = Path.Combine(solutionDirectory, "Dragon.db");
+
             services.AddDbContext<DragonContext>(options =>
             {
-                options.UseSqlite("Data Source=C:\\Users\\sjors\\Desktop\\DragonBot\\Dragon.db");
+                options.UseSqlite($"Data Source={databasePath}");
                 options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
             });
 
