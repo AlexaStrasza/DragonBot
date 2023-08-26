@@ -161,8 +161,8 @@ namespace DragonBot
                         }
                         else
                         {
-                            member.WeekPointsPvM = 0;
-                            maxPointsAllowedPvM = weeklyLimit;
+                            member.WeekPointsPvP = 0;
+                            maxPointsAllowedPvP = weeklyLimit;
                         }
 
                         if (maxPointsAllowedPvP == 0)
