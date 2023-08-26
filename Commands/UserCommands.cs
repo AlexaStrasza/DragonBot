@@ -1,4 +1,4 @@
-﻿using Azure;
+using Azure;
 using DragonBot.Helpers;
 using DragonBot.Models;
 using DragonBot.Services;
@@ -61,7 +61,10 @@ namespace DragonBot.Commands
             //    Stop = new DiscordButtonComponent(ButtonStyle.Danger, "stop", "", false, new DiscordComponentEmoji(DiscordEmoji.FromName(ctx.Client, ":punch:"))),
             //};
 
+            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                new DiscordInteractionResponseBuilder(new DiscordMessageBuilder().WithContent($"Gathering highscores...")) { IsEphemeral = true });
 
+            var interactivity = ctx.Client.GetInteractivity();
 
             List<Page> pages = new List<Page>();
 
@@ -118,9 +121,7 @@ namespace DragonBot.Commands
                     pages.Add(new Page("", embed));
                 }
 
-                var interactivity = ctx.Client.GetInteractivity();
-
-                await interactivity.SendPaginatedResponseAsync(ctx.Interaction, true, ctx.User, pages, /*buttons*/ null, PaginationBehaviour.Ignore, ButtonPaginationBehavior.DeleteMessage, asEditResponse: false);
+                await interactivity.SendPaginatedResponseAsync(ctx.Interaction, true, ctx.User, pages, /*buttons*/ null, PaginationBehaviour.Ignore, ButtonPaginationBehavior.DeleteMessage, asEditResponse: true);
             }
         }
 
@@ -128,6 +129,9 @@ namespace DragonBot.Commands
         public async Task GetPoints(InteractionContext ctx,
             [Option("Members", "Displays point history of given member.")] DiscordUser user = null)
         {
+            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                new DiscordInteractionResponseBuilder(new DiscordMessageBuilder().WithContent($"Gathering points information...")) { IsEphemeral = true });
+
             ClanMember member = null;
             if (user != null)
                 member = await _memberService.GetOrCreateMemberAsync(user.Id).ConfigureAwait(false);
@@ -155,13 +159,11 @@ namespace DragonBot.Commands
                 description += $"\n{getUser.Mention} is currently at the highest attainable rank!";
             }
 
-            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
-                new DiscordInteractionResponseBuilder(new DiscordMessageBuilder().AddEmbed(new DiscordEmbedBuilder()
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder(new DiscordMessageBuilder().AddEmbed(new DiscordEmbedBuilder()
                 {
                     Title = $"Points:",
                     Description = description
-                }))
-                { IsEphemeral = true });
+                })));
         }
 
         [SlashCommand("apply", "Apply to the clan. Required to either fill in recruitedBy or recruitedFrom.")]
@@ -172,6 +174,9 @@ namespace DragonBot.Commands
             [Option("recruitedby", "Who recruited you if you were recruited ingame")] DiscordUser recruitedBy = null,
             [Option("recruitedfrom", "Where you got recruited from or where you found our clan")] string recruitedFrom = null)
         {
+            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                new DiscordInteractionResponseBuilder(new DiscordMessageBuilder().WithContent($"Posting application...")) { IsEphemeral = true });
+
             if (recruitedBy == null && recruitedFrom == null)
             {
                 var embed = new DiscordEmbedBuilder()
@@ -182,11 +187,10 @@ namespace DragonBot.Commands
 
                 var message = new DiscordMessageBuilder().AddEmbed(embed);
 
-                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder(message) { IsEphemeral = true });
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder(message));
             }
             else
             {
-
                 DiscordButtonComponent buttonAccept = new DiscordButtonComponent(ButtonStyle.Success, "applyAccept", "Accept");
                 DiscordButtonComponent buttonDecline = new DiscordButtonComponent(ButtonStyle.Danger, "applyDeny", "Deny");
                 DiscordButtonComponent buttonCancel = new DiscordButtonComponent(ButtonStyle.Secondary, "applyCancel", "Cancel");
@@ -223,7 +227,8 @@ namespace DragonBot.Commands
 
                 var message = new DiscordMessageBuilder().AddComponents(buttonAccept, buttonDecline, buttonCancel).AddEmbed(embed);
 
-                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder(message));
+                await ctx.DeleteResponseAsync();
+                await ctx.Channel.SendMessageAsync(message);
             }
         }
 
@@ -231,6 +236,9 @@ namespace DragonBot.Commands
         public async Task SetNick(InteractionContext ctx,
             [Option("username", "your rsn")] string rsn)
         {
+            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                new DiscordInteractionResponseBuilder(new DiscordMessageBuilder().WithContent($"Updating RSN...")));
+
             DiscordMember discordMember = await ctx.Guild.GetMemberAsync(ctx.User.Id);
 
             await _memberService.GetOrCreateMemberAsync(ctx.User.Id);
@@ -259,115 +267,109 @@ namespace DragonBot.Commands
             };
             var message = new DiscordMessageBuilder().AddEmbed(embed);
 
-            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder(message));
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder(message));
         }
 
         [SlashCommand("history", "Displays a members point history.")]
         public async Task ShowHistory(InteractionContext ctx,
         [Option("member", "Displays point history of given member")] DiscordUser user = null)
         {
-            try
-            {
-                DiscordUser userToDisplay = null;
-                bool permissionError = false;
+            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                new DiscordInteractionResponseBuilder(new DiscordMessageBuilder().WithContent($"Gathering history...")) { IsEphemeral = true });
 
-                if (user == null)
+            var interactivity = ctx.Client.GetInteractivity();
+
+            DiscordUser userToDisplay = null;
+            bool permissionError = false;
+
+            if (user == null)
+            {
+                userToDisplay = ctx.User;
+            }
+            else
+            {
+                DiscordMember member = await ctx.Guild.GetMemberAsync(ctx.User.Id);
+                if (Helper.IsAdmin(ctx.Guild, member))
+                {
+                    userToDisplay = user;
+                }
+                else
                 {
                     userToDisplay = ctx.User;
-                }
-                else
-                {
-                    DiscordMember member = await ctx.Guild.GetMemberAsync(ctx.User.Id);
-                    if (Helper.IsAdmin(ctx.Guild, member))
-                    {
-                        userToDisplay = user;
-                    }
-                    else
-                    {
-                        userToDisplay = ctx.User;
-                        permissionError = true;
-                    }
-                }
-
-                List<Page> pages = new List<Page>();
-
-                List<Vouch> vouches = await _vouchService.GetVouchesOfUserAsync(userToDisplay.Id);
-
-                int totalLines = vouches.Count;
-
-                if (totalLines == 0)
-                {
-                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder(new DiscordMessageBuilder().AddEmbed(new DiscordEmbedBuilder()
-                    {
-                        Title = $"No History.",
-                        Description = $"There was no point history found for {userToDisplay.Mention}"
-                    }))
-                    { IsEphemeral = true });
-                }
-                else
-                {
-                    int totalPages = totalLines / linesPerPage;
-                    int remainder = totalLines % linesPerPage;
-
-                    if (remainder > 0)
-                    {
-                        totalPages++;
-                    }
-
-                    for (int page = 0; page < totalPages; page++)
-                    {
-                        DiscordEmbedBuilder embed = new DiscordEmbedBuilder();
-
-                        embed.AddField("​​​Point history of:", userToDisplay.Mention, true);
-                        embed.AddField("\u200B", "\u200B", true);
-                        embed.AddField("\u200B", "\u200B", true);
-
-                        string dateList = "";
-                        string pointList = "";
-                        string descriptionList = "";
-
-                        int startAt = page * linesPerPage;
-
-                        List<Vouch> subList = vouches.Skip(startAt).Take(linesPerPage).ToList();
-
-                        foreach (var vouch in subList)
-                        {
-                            startAt++;
-                            dateList += $"<t:{(int)vouch.DateTime.Subtract(new DateTime(1970, 1, 1)).TotalSeconds}:D>\n";
-
-                            if (vouch.PointValue > 0)
-                                pointList += $"+{vouch.PointValue}\n";
-                            else
-                                pointList += $"{vouch.PointValue}\n";
-                            if (vouch.VouchDescription.IsNullOrEmpty()) descriptionList += "\u200B\n";
-                            else descriptionList += $"{vouch.VouchDescription}\n";
-
-                        }
-                        embed.AddField("​​​Date", dateList, true);
-                        embed.AddField("Points Δ", pointList, true);
-                        embed.AddField("Description", descriptionList, true);
-
-                        string footer = "";
-                        if (permissionError)
-                        {
-                            footer += $"No permission to view others history. Displaying your own.\n";
-                        }
-                        footer += $"Page {page + 1} of {totalPages}";
-
-                        embed.WithFooter(footer);
-
-                        pages.Add(new Page("", embed));
-                    }
-
-                    var interactivity = ctx.Client.GetInteractivity();
-
-                    await interactivity.SendPaginatedResponseAsync(ctx.Interaction, true, ctx.User, pages, /*buttons*/ null, PaginationBehaviour.Ignore, ButtonPaginationBehavior.DeleteMessage, asEditResponse: false);
-
+                    permissionError = true;
                 }
             }
-            catch (Exception ex)
+
+            List<Page> pages = new List<Page>();
+
+            List<Vouch> vouches = await _vouchService.GetVouchesOfUserAsync(userToDisplay.Id);
+
+            int totalLines = vouches.Count;
+
+            if (totalLines == 0)
             {
-                throw new Exception(ex.Message);
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder(new DiscordMessageBuilder().AddEmbed(new DiscordEmbedBuilder()
+                {
+                    Title = $"No History.",
+                    Description = $"There was no point history found for {userToDisplay.Mention}"
+                })));
+            }
+            else
+            {
+                int totalPages = totalLines / linesPerPage;
+                int remainder = totalLines % linesPerPage;
+
+                if (remainder > 0)
+                {
+                    totalPages++;
+                }
+
+                for (int page = 0; page < totalPages; page++)
+                {
+                    DiscordEmbedBuilder embed = new DiscordEmbedBuilder();
+
+                    embed.AddField("​​​Point history of:", userToDisplay.Mention, true);
+                    embed.AddField("\u200B", "\u200B", true);
+                    embed.AddField("\u200B", "\u200B", true);
+
+                    string dateList = "";
+                    string pointList = "";
+                    string descriptionList = "";
+
+                    int startAt = page * linesPerPage;
+
+                    List<Vouch> subList = vouches.Skip(startAt).Take(linesPerPage).ToList();
+
+                    foreach (var vouch in subList)
+                    {
+                        startAt++;
+                        dateList += $"<t:{(int)vouch.DateTime.Subtract(new DateTime(1970, 1, 1)).TotalSeconds}:D>\n";
+
+                        if (vouch.PointValue > 0)
+                            pointList += $"+{vouch.PointValue}\n";
+                        else
+                            pointList += $"{vouch.PointValue}\n";
+                        if (vouch.VouchDescription.IsNullOrEmpty()) descriptionList += "\u200B\n";
+                        else descriptionList += $"{vouch.VouchDescription}\n";
+
+                    }
+                    embed.AddField("​​​Date", dateList, true);
+                    embed.AddField("Points Δ", pointList, true);
+                    embed.AddField("Description", descriptionList, true);
+
+                    string footer = "";
+                    if (permissionError)
+                    {
+                        footer += $"No permission to view others history. Displaying your own.\n";
+                    }
+                    footer += $"Page {page + 1} of {totalPages}";
+
+                    embed.WithFooter(footer);
+
+                    pages.Add(new Page("", embed));
+                }
+
+                await interactivity.SendPaginatedResponseAsync(ctx.Interaction, true, ctx.User, pages, /*buttons*/ null, PaginationBehaviour.Ignore, ButtonPaginationBehavior.DeleteMessage, asEditResponse: true);
             }
         }
     }

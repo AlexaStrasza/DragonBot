@@ -1,4 +1,4 @@
-﻿using DragonBot.Attributes;
+using DragonBot.Attributes;
 using DragonBot.Context;
 using DragonBot.Helpers;
 using DragonBot.Models;
@@ -54,7 +54,7 @@ namespace DragonBot.Commands
             [Option("Points", "Amount of points to give. Can be negative")] long points,
             [Option("Description", "Point award description")] string description)
         {
-            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder()
+            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
             {
                 IsEphemeral = true,
             }.WithContent("Please provide a list of users using mentions (@). To cancel type \"Cancel\"."));
@@ -65,69 +65,78 @@ namespace DragonBot.Commands
                 x.Author.Id == ctx.User.Id);
             string embedDescription = "";
 
-            if (messageResult.Result.Content.Contains("Cancel") || messageResult.Result.Content.Contains("cancel"))
+            if (!messageResult.TimedOut)
             {
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder(new DiscordMessageBuilder().AddEmbed(new DiscordEmbedBuilder()
+                if (messageResult.Result.Content.Contains("Cancel") || messageResult.Result.Content.Contains("cancel"))
                 {
-                    Title = $"Cancelling.",
-                    Description = $"No points awarded."
-                }))
-                { IsEphemeral = true });
-            }
-            else if (messageResult.Result.MentionedUsers.Count > 0)
-            {
-                DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
-                {
-                    Title = $"Changes applied to:",
-                };
-
-                string userList = "";
-                string pointList = "";
-                string newPointsList = "";
-
-                foreach (var user in messageResult.Result.MentionedUsers)
-                {
-                    await _memberService.GetOrCreateMemberAsync(user.Id).ConfigureAwait(false);
-                    PointDifferenceViewModel difference = await _pointDistributionService.ChangePointsAsync(user.Id, (int)points, description).ConfigureAwait(false);
-
-                    string change = "";
-                    if (difference.pointsChange > 0)
+                    await ctx.EditResponseAsync(new DiscordWebhookBuilder(new DiscordMessageBuilder().AddEmbed(new DiscordEmbedBuilder()
                     {
-                        change += "+" + difference.pointsChange;
-                    }
-                    else change += difference.pointsChange;
-
-                    embedDescription += $"{user.Mention} **{change}** (new total: **{difference.pointsNew}**)\n";
-
-                    await UpdateRankAsync(ctx, difference, user.Id);
-
-                    userList += $"{user.Mention}\n";
-                    pointList += $"{change}\n";
-                    newPointsList += $"{difference.pointsNew}\n";
+                        Title = $"Cancelling.",
+                        Description = $"No points awarded."
+                    })));
                 }
-
-                embed.AddField("​​​User", userList, true);
-                embed.AddField("Points Δ", pointList, true);
-                embed.AddField("New Point Total", newPointsList, true);
-
-                if (!description.IsNullOrEmpty())
+                else if (messageResult.Result.MentionedUsers.Count > 0)
                 {
-                    embed.AddField("Description:", description);
+                    DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
+                    {
+                        Title = $"Changes applied to:",
+                    };
+
+                    string userList = "";
+                    string pointList = "";
+                    string newPointsList = "";
+
+                    foreach (var user in messageResult.Result.MentionedUsers)
+                    {
+                        await _memberService.GetOrCreateMemberAsync(user.Id).ConfigureAwait(false);
+                        PointDifferenceViewModel difference = await _pointDistributionService.ChangePointsAsync(user.Id, (int)points, description).ConfigureAwait(false);
+
+                        string change = "";
+                        if (difference.pointsChange > 0)
+                        {
+                            change += "+" + difference.pointsChange;
+                        }
+                        else change += difference.pointsChange;
+
+                        embedDescription += $"{user.Mention} **{change}** (new total: **{difference.pointsNew}**)\n";
+
+                        await UpdateRankAsync(ctx, difference, user.Id);
+
+                        userList += $"{user.Mention}\n";
+                        pointList += $"{change}\n";
+                        newPointsList += $"{difference.pointsNew}\n";
+                    }
+
+                    embed.AddField("​​​User", userList, true);
+                    embed.AddField("Points Δ", pointList, true);
+                    embed.AddField("New Point Total", newPointsList, true);
+
+                    if (!description.IsNullOrEmpty())
+                    {
+                        embed.AddField("Description:", description);
+                    }
+                    await ctx.Channel.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(embed));
+                    await ctx.Interaction.DeleteOriginalResponseAsync();
                 }
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder(new DiscordMessageBuilder().AddEmbed(embed)));
+                else
+                {
+                    await ctx.EditResponseAsync(new DiscordWebhookBuilder(new DiscordMessageBuilder().AddEmbed(new DiscordEmbedBuilder()
+                    {
+                        Title = $"No users mentioned.",
+                        Description = $"Cancelling."
+                    }))).ConfigureAwait(false);
+                }
+
+                await messageResult.Result.DeleteAsync().ConfigureAwait(false);
             }
             else
             {
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder(new DiscordMessageBuilder().AddEmbed(new DiscordEmbedBuilder()
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder(new DiscordMessageBuilder().AddEmbed(new DiscordEmbedBuilder()
                 {
-                    Title = $"No users mentioned.",
+                    Title = $"Timed out.",
                     Description = $"Cancelling."
-                }))
-                { IsEphemeral = true });
+                })));
             }
-
-            await messageResult.Result.DeleteAsync();
-            await ctx.Interaction.DeleteOriginalResponseAsync();
         }
 
         [SlashCommand("batchvouch", "Give a member points for pvp or pvm trips")]
@@ -136,7 +145,7 @@ namespace DragonBot.Commands
             [Option("host-or-attendee", "If the user hosted or joined as an attendee")] TripAttendeeType tripAttendee,
             [Option("description", "Point award description")] string description)
         {
-            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder()
+            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
             {
                 IsEphemeral = true,
             }.WithContent("Please provide a list of users using mentions (@). To cancel type \"Cancel\"."));
@@ -161,66 +170,75 @@ namespace DragonBot.Commands
                     break;
             }
 
-            if (messageResult.Result.Content.Contains("Cancel") || messageResult.Result.Content.Contains("cancel"))
+            if (!messageResult.TimedOut)
             {
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder(new DiscordMessageBuilder().AddEmbed(new DiscordEmbedBuilder()
+                if (messageResult.Result.Content.Contains("Cancel") || messageResult.Result.Content.Contains("cancel"))
                 {
-                    Title = $"Cancelling.",
-                    Description = $"No points awarded."
-                }))
-                { IsEphemeral = true });
-            }
-            else if (messageResult.Result.MentionedUsers.Count > 0)
-            {
-                DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
-                {
-                    Title = $"Changes applied to:",
-                };
-
-                string userList = "";
-                string pointList = "";
-                string newPointsList = "";
-
-                foreach (var user in messageResult.Result.MentionedUsers)
-                {
-                    PointDifferenceWeeklyViewModel difference = await _pointDistributionService.GrantWeeklyPoints(user.Id, pointsToGive, _configRanks.WeeklyPointLimit, tripType, embedDescription);
-
-                    if (!difference.errored)
+                    await ctx.EditResponseAsync(new DiscordWebhookBuilder(new DiscordMessageBuilder().AddEmbed(new DiscordEmbedBuilder()
                     {
-                        await UpdateRankAsync(ctx, difference.differenceViewModel, user.Id);
+                        Title = $"Cancelling.",
+                        Description = $"No points awarded."
+                    })));
+                }
+                else if (messageResult.Result.MentionedUsers.Count > 0)
+                {
+                    DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
+                    {
+                        Title = $"Changes applied to:",
+                    };
 
-                        string change = $"+{difference.differenceViewModel.pointsChange}";
+                    string userList = "";
+                    string pointList = "";
+                    string newPointsList = "";
 
-                        if (difference.pointsThisWeek >= _configRanks.WeeklyPointLimit)
+                    foreach (var user in messageResult.Result.MentionedUsers)
+                    {
+                        PointDifferenceWeeklyViewModel difference = await _pointDistributionService.GrantWeeklyPoints(user.Id, pointsToGive, _configRanks.WeeklyPointLimit, tripType, embedDescription);
+
+                        if (!difference.errored)
                         {
-                            change += $" (point limit reached)";
-                        }
+                            await UpdateRankAsync(ctx, difference.differenceViewModel, user.Id);
 
-                        userList += $"{user.Mention}\n";
-                        pointList += $"{change}\n";
-                        newPointsList += $"{difference.differenceViewModel.pointsNew}\n";
+                            string change = $"+{difference.differenceViewModel.pointsChange}";
+
+                            if (difference.pointsThisWeek >= _configRanks.WeeklyPointLimit)
+                            {
+                                change += $" (point limit reached)";
+                            }
+
+                            userList += $"{user.Mention}\n";
+                            pointList += $"{change}\n";
+                            newPointsList += $"{difference.differenceViewModel.pointsNew}\n";
+                        }
                     }
+
+                    embed.AddField("​​​User", userList, true);
+                    embed.AddField("Points Δ", pointList, true);
+                    embed.AddField("New Point Total", newPointsList, true);
+                    embed.AddField("Description:", embedDescription);
+
+                    await ctx.Channel.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(embed)).ConfigureAwait(false);
+                    await ctx.Interaction.DeleteOriginalResponseAsync().ConfigureAwait(false);
+                }
+                else
+                {
+                    await ctx.EditResponseAsync(new DiscordWebhookBuilder(new DiscordMessageBuilder().AddEmbed(new DiscordEmbedBuilder()
+                    {
+                        Title = $"No users mentioned.",
+                        Description = $"Cancelling."
+                    }))).ConfigureAwait(false);
                 }
 
-                embed.AddField("​​​User", userList, true);
-                embed.AddField("Points Δ", pointList, true);
-                embed.AddField("New Point Total", newPointsList, true);
-                embed.AddField("Description:", embedDescription);
-
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder(new DiscordMessageBuilder().AddEmbed(embed)));
+                await messageResult.Result.DeleteAsync().ConfigureAwait(false);
             }
             else
             {
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder(new DiscordMessageBuilder().AddEmbed(new DiscordEmbedBuilder()
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder(new DiscordMessageBuilder().AddEmbed(new DiscordEmbedBuilder()
                 {
-                    Title = $"No users mentioned.",
+                    Title = $"Timed out.",
                     Description = $"Cancelling."
-                }))
-                { IsEphemeral = true });
+                }))).ConfigureAwait(false);
             }
-
-            await messageResult.Result.DeleteAsync();
-            await ctx.Interaction.DeleteOriginalResponseAsync();
         }
 
         [SlashCommand("editpoints", "Changes clanpoints for given member")]
@@ -229,6 +247,7 @@ namespace DragonBot.Commands
             [Option("Points", "Amount of points to award a Clan Member")] long points,
             [Option("Description", "Point award description")] string description)
         {
+            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Applying point changes..."));
 
             await _memberService.GetOrCreateMemberAsync(user.Id).ConfigureAwait(false);
             PointDifferenceViewModel difference = await _pointDistributionService.ChangePointsAsync(user.Id, (int)points, description).ConfigureAwait(false);
@@ -253,8 +272,7 @@ namespace DragonBot.Commands
 
             embed.AddField("Description:", description);
 
-            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
-                new DiscordInteractionResponseBuilder(new DiscordMessageBuilder().AddEmbed(embed)));
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder(new DiscordMessageBuilder().AddEmbed(embed)));
         }
 
         [SlashCommand("vouch", "Give a member points for pvp or pvm trips")]
@@ -264,10 +282,11 @@ namespace DragonBot.Commands
             [Option("host-or-attendee", "If the user hosted or joined as an attendee")] TripAttendeeType tripAttendee,
             [Option("description", "Point award description")] string description)
         {
+            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Applying point changes...")).ConfigureAwait(false);
+
             await _memberService.GetOrCreateMemberAsync(user.Id).ConfigureAwait(false);
             int pointsToGive = 0;
             string infoDescription = "";
-
 
             switch (tripAttendee)
             {
@@ -281,12 +300,11 @@ namespace DragonBot.Commands
                     break;
             }
 
-            PointDifferenceWeeklyViewModel difference = await _pointDistributionService.GrantWeeklyPoints(user.Id, pointsToGive, _configRanks.WeeklyPointLimit, tripType, infoDescription);
-            //PointDifferenceViewModel difference = await _pointDistributionService.ChangePointsAsync(user.Id, (int)points, description).ConfigureAwait(false);
+            PointDifferenceWeeklyViewModel difference = await _pointDistributionService.GrantWeeklyPoints(user.Id, pointsToGive, _configRanks.WeeklyPointLimit, tripType, infoDescription).ConfigureAwait(false);
 
             if (!difference.errored)
             {
-                await UpdateRankAsync(ctx, difference.differenceViewModel, user.Id);
+                await UpdateRankAsync(ctx, difference.differenceViewModel, user.Id).ConfigureAwait(false);
 
                 string change = $"+{difference.differenceViewModel.pointsChange}";
 
@@ -308,17 +326,15 @@ namespace DragonBot.Commands
 
                 embed.AddField("Description:", infoDescription);
 
-                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
-                    new DiscordInteractionResponseBuilder(new DiscordMessageBuilder().AddEmbed(embed)));
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder(new DiscordMessageBuilder().AddEmbed(embed))).ConfigureAwait(false);
             }
             else
             {
-                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
-                    new DiscordInteractionResponseBuilder(new DiscordMessageBuilder().AddEmbed(new DiscordEmbedBuilder()
-                    {
-                        Title = "An error has occurred.",
-                        Description = "Please contact the bot developer."
-                    })));
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder(new DiscordMessageBuilder().AddEmbed(new DiscordEmbedBuilder()
+                {
+                    Title = "An error has occurred.",
+                    Description = "Please contact the bot developer."
+                }))).ConfigureAwait(false);
             }
         }
 
@@ -335,7 +351,7 @@ namespace DragonBot.Commands
             var rolesToRemove = currentRankIds.Intersect(rankRoleIds).Except(new[] { newRank.RoleId });
             foreach (ulong roleId in rolesToRemove)
             {
-                await member.RevokeRoleAsync(ctx.Guild.GetRole(roleId));
+                await member.RevokeRoleAsync(ctx.Guild.GetRole(roleId)).ConfigureAwait(false);
             }
 
             // Add the correct rank role if it's missing
@@ -356,11 +372,11 @@ namespace DragonBot.Commands
 
                 builder.AddEmbed(embed);
                 builder.AddComponents(buttonDelete);
-                await channel.SendMessageAsync(builder);
+                await channel.SendMessageAsync(builder).ConfigureAwait(false);
             }
         }
 
-        
+
 
         //[SlashCommand("openmodal", "Opens a sample modal")]
         //public async Task OpenModalCommand(InteractionContext ctx)
