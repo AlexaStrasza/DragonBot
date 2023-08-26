@@ -101,7 +101,11 @@ namespace DragonBot
                             }
                             else maxPointsAllowedPvM = weeklyLimit;
                         }
-                        else maxPointsAllowedPvM = weeklyLimit;
+                        else
+                        {
+                            member.WeekPointsPvM = 0;
+                            maxPointsAllowedPvM = weeklyLimit;
+                        }
 
                         if (maxPointsAllowedPvM == 0)
                         {
@@ -155,7 +159,11 @@ namespace DragonBot
                             }
                             else maxPointsAllowedPvP = weeklyLimit;
                         }
-                        else maxPointsAllowedPvP = weeklyLimit;
+                        else
+                        {
+                            member.WeekPointsPvM = 0;
+                            maxPointsAllowedPvM = weeklyLimit;
+                        }
 
                         if (maxPointsAllowedPvP == 0)
                         {
