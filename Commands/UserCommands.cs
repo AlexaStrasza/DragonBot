@@ -35,7 +35,7 @@ namespace DragonBot.Commands
             linesPerPage = 25;
         }
 
-        [SlashCommand("highscores", "Display the clan points highscores")]
+        [SlashCommand("highscores", "Display the clan points highscores.")]
         public async Task ShowHighscores(InteractionContext ctx)
         {
             //DiscordInteractionResponseBuilder responseBuilder = new DiscordInteractionResponseBuilder().WithContent("Retrieving Highscores...");
@@ -114,9 +114,9 @@ namespace DragonBot.Commands
             }
         }
 
-        [SlashCommand("getpoints", "Show a users Point total")]
+        [SlashCommand("points", "Show a members Point total.")]
         public async Task GetPoints(InteractionContext ctx,
-            [Option("Members", "Displays point history of given member")] DiscordUser user = null)
+            [Option("Members", "Displays point history of given member.")] DiscordUser user = null)
         {
             ClanMember member = null;
             if (user != null)
@@ -133,7 +133,7 @@ namespace DragonBot.Commands
                 { IsEphemeral = true });
         }
 
-        [SlashCommand("apply", "Apply to the clan. Required ")]
+        [SlashCommand("apply", "Apply to the clan. Required to either fill in recruitedBy or recruitedFrom.")]
         public async Task Apply(InteractionContext ctx,
             [Option("RSN", "Your RSN")] string rsn,
             [Option("cmblevel", "Your Combat level")] long combatLevel,
@@ -196,7 +196,7 @@ namespace DragonBot.Commands
             }
         }
 
-        [SlashCommand("setrsn", "set your rsn")]
+        [SlashCommand("setrsn", "Set your rsn.")]
         public async Task SetNick(InteractionContext ctx,
             [Option("username", "your rsn")] string rsn)
         {
@@ -230,9 +230,9 @@ namespace DragonBot.Commands
             await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder(message));
         }
 
-        [SlashCommand("history", "Show a users Point history")]
+        [SlashCommand("history", "Displays a members point history.")]
         public async Task ShowHistory(InteractionContext ctx,
-        [Option("Members", "Displays point history of given member")] DiscordUser user = null)
+        [Option("member", "Displays point history of given member")] DiscordUser user = null)
         {
             try
             {
