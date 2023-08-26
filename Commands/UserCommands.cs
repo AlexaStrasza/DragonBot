@@ -35,7 +35,7 @@ namespace DragonBot.Commands
             linesPerPage = 25;
         }
 
-        [SlashCommand("highscores", "Display the clan points highscores.")]
+        [SlashCommand("highscores", "Displays the clan points highscores.")]
         public async Task ShowHighscores(InteractionContext ctx)
         {
             //DiscordInteractionResponseBuilder responseBuilder = new DiscordInteractionResponseBuilder().WithContent("Retrieving Highscores...");
@@ -114,7 +114,7 @@ namespace DragonBot.Commands
             }
         }
 
-        [SlashCommand("points", "Show a members Point total.")]
+        [SlashCommand("points", "Displays a members point total.")]
         public async Task GetPoints(InteractionContext ctx,
             [Option("Members", "Displays point history of given member.")] DiscordUser user = null)
         {
@@ -202,6 +202,7 @@ namespace DragonBot.Commands
         {
             DiscordMember discordMember = await ctx.Guild.GetMemberAsync(ctx.User.Id);
 
+            await _memberService.GetOrCreateMemberAsync(ctx.User.Id);
             await _memberService.ChangeRSN(ctx.User.Id, rsn);
             string description = $"{discordMember.Mention}\n" +
                                  $"Your RSN has been set to: **{rsn}**";
