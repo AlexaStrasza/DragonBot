@@ -1,5 +1,6 @@
 ﻿using DragonBot.Attributes;
 using DragonBot.Context;
+using DragonBot.Helpers;
 using DragonBot.Models;
 using DragonBot.Services;
 using DragonBot.ViewModel;
@@ -321,14 +322,12 @@ namespace DragonBot.Commands
             }
         }
 
-        
-
         public async Task UpdateRankAsync(InteractionContext ctx, PointDifferenceViewModel difference, ulong userId)
         {
             DiscordMember member = await ctx.Guild.GetMemberAsync(userId);
 
             var currentRankIds = member.Roles.Select(role => role.Id);
-            var newRank = FindAppropriateRank(difference.pointsNew);
+            var newRank = Helper.FindAppropriateRank(difference.pointsNew);
 
             var rankRoleIds = _configRanks.Ranks.Select(rank => rank.RoleId);
 
@@ -361,20 +360,7 @@ namespace DragonBot.Commands
             }
         }
 
-        private Rank FindAppropriateRank(int userPoints)
-        {
-            Rank selectedRank = new Rank();
-
-            foreach (var rank in _configRanks.Ranks)
-            {
-                if (userPoints >= rank.PointRequirement && (selectedRank.PointRequirement == 0 || rank.PointRequirement > selectedRank.PointRequirement))
-                {
-                    selectedRank = rank;
-                }
-            }
-
-            return selectedRank;
-        }
+        
 
         //[SlashCommand("openmodal", "Opens a sample modal")]
         //public async Task OpenModalCommand(InteractionContext ctx)

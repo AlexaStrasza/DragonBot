@@ -10,6 +10,13 @@ namespace DragonBot.Helpers
 {
     public static class Helper
     {
+        private static ConfigRanks _configRanks;
+
+        static Helper()
+        {
+            _configRanks = ConfigLoader.LoadConfig();
+        }
+
         public static string GetNumbers(this string text)
         {
             text ??= string.Empty;
@@ -50,6 +57,41 @@ namespace DragonBot.Helpers
                 member.Roles.Contains(guild.GetRole(1139575841228070972)) ||
                 member.Roles.Contains(guild.GetRole(1138108787128021073));
 
+        }
+
+        public static Rank FindAppropriateRank(int userPoints)
+        {
+            Rank selectedRank = new Rank();
+
+            foreach (var rank in _configRanks.Ranks)
+            {
+                if (userPoints >= rank.PointRequirement && (selectedRank.PointRequirement == 0 || rank.PointRequirement > selectedRank.PointRequirement))
+                {
+                    selectedRank = rank;
+                }
+            }
+
+            return selectedRank;
+        }
+
+        public static Rank GetNextRank(int userPoints)
+        {
+            Rank nextRank = new Rank() { IsDefault = true };
+
+            foreach (var rank in _configRanks.Ranks)
+            {
+                if (userPoints < rank.PointRequirement)
+                {
+                    if (nextRank.IsDefault || rank.PointRequirement < nextRank.PointRequirement)
+                    {
+                        nextRank = rank;
+                        nextRank.IsDefault = false;
+                        break;
+                    }
+                }
+            }
+
+            return nextRank;
         }
     }
 }

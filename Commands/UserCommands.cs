@@ -13,6 +13,7 @@ using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
@@ -27,12 +28,21 @@ namespace DragonBot.Commands
     {
         private readonly IClanMemberService _memberService;
         private readonly IVouchService _vouchService;
+        private readonly ConfigRanks _configRanks;
         private readonly int linesPerPage;
         public UserCommands(IClanMemberService context, IVouchService vouchService)
         {
             _memberService = context;
             _vouchService = vouchService;
             linesPerPage = 25;
+
+            var json = string.Empty;
+
+            using (FileStream fs = File.OpenRead("configRanks.json"))
+            using (StreamReader sr = new StreamReader(fs, new UTF8Encoding(false)))
+                json = sr.ReadToEnd();
+
+            _configRanks = JsonConvert.DeserializeObject<ConfigRanks>(json);
         }
 
         [SlashCommand("highscores", "Displays the clan points highscores.")]
@@ -124,11 +134,32 @@ namespace DragonBot.Commands
             else
                 member = await _memberService.GetOrCreateMemberAsync(ctx.User.Id).ConfigureAwait(false);
 
+            DiscordUser getUser = await ctx.Client.GetUserAsync(member.DiscordId);
+
+            string description = $"{getUser.Mention} has **{member.ClanPoints}** points";
+
+            Rank rank = Helper.FindAppropriateRank(member.ClanPoints);
+            DiscordRole role = ctx.Guild.GetRole(rank.RoleId);
+
+            description += $"\n{getUser.Mention} is currently at the {role.Mention} rank.";
+            
+            Rank nextRank = Helper.GetNextRank(member.ClanPoints);
+
+            if (!nextRank.IsDefault)
+            {
+                DiscordRole nextRole = ctx.Guild.GetRole(nextRank.RoleId);
+                description += $"\n{getUser.Mention} is currently at **{member.ClanPoints}**/**{nextRank.PointRequirement}** points towards the {nextRole.Mention} rank.";
+            }
+            else
+            {
+                description += $"\n{getUser.Mention} is currently at the highest attainable rank!";
+            }
+
             await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder(new DiscordMessageBuilder().AddEmbed(new DiscordEmbedBuilder()
                 {
-                    Title = $"Points",
-                    Description = $"{ctx.Client.GetUserAsync(member.DiscordId).Result.Mention} has {member.ClanPoints} points"
+                    Title = $"Points:",
+                    Description = description
                 }))
                 { IsEphemeral = true });
         }

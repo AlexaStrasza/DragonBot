@@ -15,5 +15,7 @@ namespace DragonBot
         public int PointRequirement { get; private set; }
         [JsonProperty("roleId")]
         public ulong RoleId { get; private set; }
+
+        public bool IsDefault { get; set; }
     }
 }
