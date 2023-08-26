@@ -151,7 +151,7 @@ namespace DragonBot.Commands
 
                 var message = new DiscordMessageBuilder().AddEmbed(embed);
 
-                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder(message) { IsEphemeral = true });
+                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder(message) { IsEphemeral = true });
             }
             else
             {
@@ -228,7 +228,7 @@ namespace DragonBot.Commands
             };
             var message = new DiscordMessageBuilder().AddEmbed(embed);
 
-            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder(message));
+            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder(message));
         }
 
         [SlashCommand("history", "Displays a members point history.")]
@@ -246,7 +246,7 @@ namespace DragonBot.Commands
                 }
                 else
                 {
-                    DiscordMember member = await ctx.Guild.GetMemberAsync(user.Id);
+                    DiscordMember member = await ctx.Guild.GetMemberAsync(ctx.User.Id);
                     if (Helper.IsAdmin(ctx.Guild, member))
                     {
                         userToDisplay = user;
