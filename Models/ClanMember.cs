@@ -24,5 +24,7 @@ namespace DragonBot.Models
         public int WeekPointsPvM { get; set; }
         public DateTime LastUpdatePvP { get; set; }
         public int WeekPointsPvP { get; set; }
+        public DateTime LastUpdateRaids { get; set; }
+        public int WeekPointsRaids { get; set; }
     }
 }

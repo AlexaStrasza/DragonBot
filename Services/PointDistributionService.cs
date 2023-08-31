@@ -205,6 +205,64 @@ namespace DragonBot
                                 differenceViewModel = difference
                             };
                         }
+                    case TripType.Raiding:
+                        int maxPointsAllowedRaids = 0;
+                        if (Helper.IsSameWeek(member.LastUpdateRaids, DateTime.Now))
+                        {
+                            if (member.WeekPointsRaids >= weeklyLimit) maxPointsAllowedRaids = 0;
+                            else if (member.WeekPointsRaids + amount > weeklyLimit)
+                            {
+                                // Gives remainder of allowed points
+                                maxPointsAllowedRaids = 100 - member.WeekPointsRaids;
+                            }
+                            else maxPointsAllowedRaids = weeklyLimit;
+                        }
+                        else
+                        {
+                            member.WeekPointsRaids = 0;
+                            maxPointsAllowedRaids = weeklyLimit;
+                        }
+
+                        if (maxPointsAllowedRaids == 0)
+                        {
+                            // at or over limit do not grant points, give error response
+                            return new PointDifferenceWeeklyViewModel()
+                            {
+                                errored = false,
+                                note = "Weekly point limit for Raiding reached.",
+                                pointsThisWeek = member.WeekPointsRaids,
+                                differenceViewModel = new PointDifferenceViewModel()
+                                {
+                                    pointsChange = 0,
+                                    pointsOld = member.ClanPoints,
+                                    pointsNew = member.ClanPoints
+                                }
+                            };
+                        }
+                        else
+                        {
+                            int pointsToGive = 0;
+                            // not at limit yet, grant as many as limit allows
+                            if (amount > maxPointsAllowedRaids)
+                                pointsToGive = maxPointsAllowedRaids;
+                            else
+                                pointsToGive = amount;
+
+                            member.WeekPointsRaids += pointsToGive;
+                            member.LastUpdateRaids = DateTime.Now;
+                            context.ClanMembers.Update(member);
+                            await context.SaveChangesAsync().ConfigureAwait(false);
+
+                            PointDifferenceViewModel difference = await ChangePointsAsync(discordId, pointsToGive, description);
+
+                            return new PointDifferenceWeeklyViewModel()
+                            {
+                                errored = false,
+                                note = "success",
+                                pointsThisWeek = member.WeekPointsRaids,
+                                differenceViewModel = difference
+                            };
+                        }
                 }
 
                 return new PointDifferenceWeeklyViewModel()
