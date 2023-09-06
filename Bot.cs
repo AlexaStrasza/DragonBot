@@ -147,14 +147,29 @@ namespace DragonBot
                 int totalLevel = int.Parse(strings[2]);
                 ulong referreeId = 0;
                 string recruitedFrom = "";
-                if (strings.Length == 4 && strings[3].Contains("<@!"))
+                Console.WriteLine("===================================================================");
+                Console.WriteLine("New applicant");
+                Console.WriteLine("===================================================================");
+                Console.WriteLine("Content of strings[3]:");
+                Console.WriteLine(strings[3]);
+                Console.WriteLine("Check contains <@!");
+                Console.WriteLine(strings[3].Contains("<@!"));
+                Console.WriteLine("strings.Length");
+                Console.WriteLine(strings.Length);
+                if (strings.Length >= 4)
+                {
+                    Console.WriteLine("get numbers");
+                    Console.WriteLine(Helper.GetNumbers(strings[3]));
+                }
+
+                if (strings.Length >= 4 && strings[3].Contains("<@!"))
                 {
                     referreeId = ulong.Parse(Helper.GetNumbers(strings[3]));
                     await _clanMemberService.GetOrCreateMemberAsync(referreeId);
                     await _pointDistributionService.ChangePointsAsync(referreeId, 5, "Recruitment Bonus");
                     await _clanMemberService.AddReferral(referreeId);
                 }
-                else if (strings.Length == 4 && !strings[3].IsNullOrEmpty())
+                else if (strings.Length >= 4 && !strings[3].IsNullOrEmpty())
                 {
                     recruitedFrom = strings[3];
                 }
