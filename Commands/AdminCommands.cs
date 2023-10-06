@@ -1,3 +1,4 @@
+using Azure;
 using DragonBot.Attributes;
 using DragonBot.Context;
 using DragonBot.Helpers;
@@ -117,6 +118,7 @@ namespace DragonBot.Commands
                     }
                     await ctx.Channel.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(embed));
                     await ctx.Interaction.DeleteOriginalResponseAsync();
+                    await UpdateHighScoresList(ctx.Guild);
                 }
                 else
                 {
@@ -219,6 +221,7 @@ namespace DragonBot.Commands
 
                     await ctx.Channel.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(embed)).ConfigureAwait(false);
                     await ctx.Interaction.DeleteOriginalResponseAsync().ConfigureAwait(false);
+                    await UpdateHighScoresList(ctx.Guild);
                 }
                 else
                 {
@@ -273,6 +276,7 @@ namespace DragonBot.Commands
             embed.AddField("Description:", description);
 
             await ctx.EditResponseAsync(new DiscordWebhookBuilder(new DiscordMessageBuilder().AddEmbed(embed)));
+            await UpdateHighScoresList(ctx.Guild);
         }
 
         [SlashCommand("vouch", "Give a member points for pvp or pvm trips")]
@@ -327,6 +331,8 @@ namespace DragonBot.Commands
                 embed.AddField("Description:", infoDescription);
 
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder(new DiscordMessageBuilder().AddEmbed(embed))).ConfigureAwait(false);
+
+                await UpdateHighScoresList(ctx.Guild);
             }
             else
             {
@@ -337,6 +343,40 @@ namespace DragonBot.Commands
                 }))).ConfigureAwait(false);
             }
         }
+
+        //[SlashCommand("editsplits", "Add or remove to someones total split amount")]
+        //public async Task AddSplit(InteractionContext ctx,
+        //    [Option("member", "The Member to edit splits of")] DiscordUser user,
+        //    [Option("split", "The size of the split")] ulong splitValue,
+        //    [Option("description", "Split description")] string description)
+        //{
+        //    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Applying split changes..."));
+
+        //    await _memberService.GetOrCreateMemberAsync(user.Id).ConfigureAwait(false);
+        //    SplitDifferenceViewModel difference = await _pointDistributionService.ChangeSplitAsync(user.Id, splitValue).ConfigureAwait(false);
+
+        //    //await UpdateRankAsync(ctx, difference, user.Id);
+
+        //    string change = "";
+        //    if (difference.pointsChange > 0)
+        //    {
+        //        change += "+" + difference.pointsChange;
+        //    }
+        //    else change += difference.pointsChange;
+
+        //    DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
+        //    {
+        //        Title = $"Changes applied to:"
+        //    };
+
+        //    embed.AddField("​​​User", user.Mention, true);
+        //    embed.AddField("Split amount Δ", change, true);
+        //    embed.AddField("Total split", difference.pointsNew.ToString(), true);
+
+        //    embed.AddField("Description:", description);
+
+        //    await ctx.EditResponseAsync(new DiscordWebhookBuilder(new DiscordMessageBuilder().AddEmbed(embed)));
+        //}
 
         public async Task UpdateRankAsync(InteractionContext ctx, PointDifferenceViewModel difference, ulong userId)
         {
@@ -376,7 +416,52 @@ namespace DragonBot.Commands
             }
         }
 
+        private async Task UpdateHighScoresList(DiscordGuild guild)
+        {
+            var channel = guild.GetChannel(1159872652928884756);
 
+            IReadOnlyList<DiscordMessage> messages = await channel.GetMessagesAsync(1);
+
+            List<ClanMember> members = await _memberService.GetAllMembers();
+
+            DiscordEmbedBuilder embed = new DiscordEmbedBuilder();
+
+            string rankList = "";
+            string userList = "";
+            string pointList = "";
+
+            int startAt = 0;
+
+            List<ClanMember> subList = members.Take(25).ToList();
+
+            foreach (var member in subList)
+            {
+                startAt++;
+                rankList += $"{startAt}\n";
+                //userList += $"{ctx.Client.GetUserAsync(member.DiscordId).Result.Mention}\n";
+                userList += $"<@!{member.DiscordId}>\n";
+                pointList += $"{member.ClanPoints}\n";
+
+            }
+            embed.AddField("​​​Rank", rankList, true);
+            embed.AddField("Clan Member", userList, true);
+            embed.AddField("Points", pointList, true);
+
+            string dateString = $"<t:{Helper.ConvertToUnixTimestamp(DateTime.Now)}:D>";
+
+            if (messages.Count > 0)
+            {
+                await messages[0].ModifyAsync(x =>
+                {
+                    x.Embed = embed;
+                    x.Content = $"Last updated on: {dateString}";
+                });
+            }
+            else
+            {
+                await channel.SendMessageAsync(new DiscordMessageBuilder().WithContent($"Last updated on: {dateString}").AddEmbed(embed));
+            }
+        }
 
         //[SlashCommand("openmodal", "Opens a sample modal")]
         //public async Task OpenModalCommand(InteractionContext ctx)

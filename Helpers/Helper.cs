@@ -93,5 +93,12 @@ namespace DragonBot.Helpers
 
             return nextRank;
         }
+
+        public static long ConvertToUnixTimestamp(DateTime dateTime)
+        {
+            DateTime unixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            TimeSpan timeSpan = dateTime.ToUniversalTime() - unixEpoch;
+            return (long)timeSpan.TotalSeconds;
+        }
     }
 }

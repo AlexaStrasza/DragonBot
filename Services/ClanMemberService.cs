@@ -12,6 +12,7 @@ namespace DragonBot
         Task<List<ClanMember>> GetAllMembers();
         Task AddReferral(ulong discordId);
         Task ChangeRSN(ulong discordId, string rsn);
+        Task ToggleMember(ulong discordId, bool enabled);
     }
 
     public class ClanMemberService : IClanMemberService
@@ -32,7 +33,7 @@ namespace DragonBot
         {
             using var context = new DragonContext(_options);
 
-            var member = await context.ClanMembers.FirstOrDefaultAsync(x => x.DiscordId == discordId).ConfigureAwait(false);
+            var member = await context.ClanMembers.FirstOrDefaultAsync(x => x.DiscordId == discordId && !x.Disabled).ConfigureAwait(false);
 
             if (member != null)
             {
@@ -46,8 +47,6 @@ namespace DragonBot
                 RSN = rsn
             };
 
-            //context.Add(member);
-
             context.ClanMembers.Add(member);
 
             await context.SaveChangesAsync().ConfigureAwait(false);
@@ -59,7 +58,7 @@ namespace DragonBot
         {
             using var context = new DragonContext(_options);
 
-            var members = await context.ClanMembers.Include(c => c.Vouches).ToListAsync().ConfigureAwait(false);
+            var members = await context.ClanMembers.Where(x => !x.Disabled).Include(c => c.Vouches).ToListAsync().ConfigureAwait(false);
             return members.OrderByDescending(x => x.ClanPoints).ToList();
         }
 
@@ -67,7 +66,7 @@ namespace DragonBot
         {
             using var context = new DragonContext(_options);
 
-            var member = await context.ClanMembers.FirstOrDefaultAsync(x => x.DiscordId == discordId).ConfigureAwait(false);
+            var member = await context.ClanMembers.FirstOrDefaultAsync(x => x.DiscordId == discordId && !x.Disabled).ConfigureAwait(false);
             member.Referrals++;
 
             context.ClanMembers.Update(member);
@@ -79,8 +78,21 @@ namespace DragonBot
         {
             using var context = new DragonContext(_options);
 
-            var member = await context.ClanMembers.FirstOrDefaultAsync(x => x.DiscordId == discordId).ConfigureAwait(false);
+            var member = await context.ClanMembers.FirstOrDefaultAsync(x => x.DiscordId == discordId && !x.Disabled).ConfigureAwait(false);
             member.RSN = rsn;
+
+            context.ClanMembers.Update(member);
+
+            await context.SaveChangesAsync().ConfigureAwait(false);
+        }
+
+        public async Task ToggleMember(ulong discordId, bool enabled)
+        {
+            using var context = new DragonContext(_options);
+
+            var member = await context.ClanMembers.FirstOrDefaultAsync(x => x.DiscordId == discordId).ConfigureAwait(false);
+
+            member.Disabled = !enabled;
 
             context.ClanMembers.Update(member);
 

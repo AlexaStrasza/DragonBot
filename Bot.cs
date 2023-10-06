@@ -74,7 +74,7 @@ namespace DragonBot
             });
 
             Client.ComponentInteractionCreated += OnButtonPressed;
-
+            Client.GuildMemberRemoved += OnMemberLeave;
             var commandsConfig = new CommandsNextConfiguration()
             {
                 StringPrefixes = new string[] { configJson.Prefix },
@@ -101,6 +101,11 @@ namespace DragonBot
 
             await Client.ConnectAsync();
             await Task.Delay(-1);
+        }
+
+        private async Task OnMemberLeave(DiscordClient sender, GuildMemberRemoveEventArgs e)
+        {
+            await _clanMemberService.ToggleMember(e.Member.Id, false);
         }
 
         private async Task OnButtonPressed(DiscordClient sender, ComponentInteractionCreateEventArgs e)

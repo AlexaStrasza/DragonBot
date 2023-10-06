@@ -14,6 +14,7 @@ namespace DragonBot
         Task<int> GetPointsAsync(ulong discordId);
         Task<PointDifferenceViewModel> ChangePointsAsync(ulong discordId, int amount, string description);
         Task<PointDifferenceWeeklyViewModel> GrantWeeklyPoints(ulong discordId, int amount, int weeklyLimit, TripType tripType, string description);
+        Task<SplitDifferenceViewModel> ChangeSplitAsync(ulong discordId, ulong amount);
     }
 
     public class PointDistributionService : IPointDistributionService
@@ -276,6 +277,44 @@ namespace DragonBot
                         pointsOld = member.ClanPoints,
                         pointsNew = member.ClanPoints
                     }
+                };
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
+        }
+
+        public async Task<SplitDifferenceViewModel> ChangeSplitAsync(ulong discordId, ulong amount)
+        {
+            try
+            {
+                using var context = new DragonContext(_options);
+                ClanMember member = await _memberService.GetOrCreateMemberAsync(discordId).ConfigureAwait(false);
+
+                ulong oldValue = member.TotalSplit;
+
+                member.TotalSplit += amount;
+
+                // Prevent Negatives
+                if (member.TotalSplit < 0)
+                {
+                    member.TotalSplit = 0;
+                }
+
+                ulong newValue = member.TotalSplit;
+                ulong change = newValue - oldValue;
+
+                //context.Update(member);
+                //context.ClanMembers.Update(member);
+
+                await context.SaveChangesAsync().ConfigureAwait(false);
+
+                return new SplitDifferenceViewModel()
+                {
+                    pointsOld = oldValue,
+                    pointsNew = newValue,
+                    pointsChange = change
                 };
             }
             catch (Exception ex)

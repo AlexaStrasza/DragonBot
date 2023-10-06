@@ -272,7 +272,7 @@ namespace DragonBot.Commands
 
         [SlashCommand("history", "Displays a members point history.")]
         public async Task ShowHistory(InteractionContext ctx,
-        [Option("member", "Displays point history of given member")] DiscordUser user = null)
+            [Option("member", "Displays point history of given member")] DiscordUser user = null)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder(new DiscordMessageBuilder().WithContent($"Gathering history...")) { IsEphemeral = true });
@@ -343,7 +343,7 @@ namespace DragonBot.Commands
                     foreach (var vouch in subList)
                     {
                         startAt++;
-                        dateList += $"<t:{(int)vouch.DateTime.Subtract(new DateTime(1970, 1, 1)).TotalSeconds}:D>\n";
+                        dateList += $"<t:{Helper.ConvertToUnixTimestamp(vouch.DateTime)}:D>\n";
 
                         if (vouch.PointValue > 0)
                             pointList += $"+{vouch.PointValue}\n";

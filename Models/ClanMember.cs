@@ -26,5 +26,7 @@ namespace DragonBot.Models
         public int WeekPointsPvP { get; set; }
         public DateTime LastUpdateRaids { get; set; }
         public int WeekPointsRaids { get; set; }
+        public ulong TotalSplit { get; set; }
+        public bool Disabled { get; set; }
     }
 }
