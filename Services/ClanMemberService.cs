@@ -67,11 +67,14 @@ namespace DragonBot
             using var context = new DragonContext(_options);
 
             var member = await context.ClanMembers.FirstOrDefaultAsync(x => x.DiscordId == discordId && !x.Disabled).ConfigureAwait(false);
-            member.Referrals++;
+            if (member != null)
+            {
+                member.Referrals++;
 
-            context.ClanMembers.Update(member);
+                context.ClanMembers.Update(member);
 
-            await context.SaveChangesAsync().ConfigureAwait(false);
+                await context.SaveChangesAsync().ConfigureAwait(false);
+            }
         }
 
         public async Task ChangeRSN(ulong discordId, string rsn)
@@ -79,11 +82,14 @@ namespace DragonBot
             using var context = new DragonContext(_options);
 
             var member = await context.ClanMembers.FirstOrDefaultAsync(x => x.DiscordId == discordId && !x.Disabled).ConfigureAwait(false);
-            member.RSN = rsn;
+            if (member != null)
+            {
+                member.RSN = rsn;
 
-            context.ClanMembers.Update(member);
+                context.ClanMembers.Update(member);
 
-            await context.SaveChangesAsync().ConfigureAwait(false);
+                await context.SaveChangesAsync().ConfigureAwait(false);
+            }
         }
 
         public async Task ToggleMember(ulong discordId, bool enabled)
@@ -92,11 +98,14 @@ namespace DragonBot
 
             var member = await context.ClanMembers.FirstOrDefaultAsync(x => x.DiscordId == discordId).ConfigureAwait(false);
 
-            member.Disabled = !enabled;
+            if(member != null)
+            {
+                member.Disabled = !enabled;
 
-            context.ClanMembers.Update(member);
+                context.ClanMembers.Update(member);
 
-            await context.SaveChangesAsync().ConfigureAwait(false);
+                await context.SaveChangesAsync().ConfigureAwait(false);
+            }
         }
     }
 }
