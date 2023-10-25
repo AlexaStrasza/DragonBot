@@ -1,4 +1,4 @@
-﻿using DragonBot.Commands;
+using DragonBot.Commands;
 using DragonBot.ConfigFiles;
 using DragonBot.Helpers;
 using DragonBot.Models;
@@ -90,7 +90,7 @@ namespace DragonBot
             {
                 Services = _services
             });
-            
+
             slashCommandsConfig.RegisterCommands<AdminCommands>(1132841029192658954);
             slashCommandsConfig.RegisterCommands<AdminCommands>(1133706557104861294);
             slashCommandsConfig.RegisterCommands<UserCommands>(1132841029192658954);
@@ -122,18 +122,27 @@ namespace DragonBot
                 case "applyCancel":
                     await HandleApplyCancelButtonAsync(sender, e);
                     break;
-                case "deleteMessage":
-                    await e.Message.DeleteAsync();
+                case "confirmRankup":
+                    await HandleConfirmRankup(sender, e);
                     break;
                 case "sampleButton":
-                        var modalButton = new DiscordButtonComponent(ButtonStyle.Secondary, "closeModalButton", "Close Modal");
-                        var modalBuilder = new DiscordMessageBuilder()
-                            .WithContent("This is a modal!")
-                            .AddComponents(modalButton);
+                    var modalButton = new DiscordButtonComponent(ButtonStyle.Secondary, "closeModalButton", "Close Modal");
+                    var modalBuilder = new DiscordMessageBuilder()
+                        .WithContent("This is a modal!")
+                    .AddComponents(modalButton);
 
-                        await e.Interaction.CreateResponseAsync(InteractionResponseType.Modal, new DiscordInteractionResponseBuilder(modalBuilder));
+                    await e.Interaction.CreateResponseAsync(InteractionResponseType.Modal, new DiscordInteractionResponseBuilder(modalBuilder));
                     break;
             }
+        }
+
+        private async Task HandleConfirmRankup(DiscordClient sender, ComponentInteractionCreateEventArgs e)
+        {
+            await e.Message.ModifyAsync(m =>
+            {
+                m.ClearComponents();
+                m.Content = $"Confirmed by {e.User.Mention}";
+            });
         }
 
         private async Task HandleApplyAcceptButtonAsync(DiscordClient sender, ComponentInteractionCreateEventArgs e)
@@ -221,7 +230,7 @@ namespace DragonBot
                 //await applicant.RevokeRoleAsync(e.Guild.GetRole(1133480882972414114));
                 await applicant.GrantRoleAsync(e.Guild.GetRole(1134194679773139026)); // Assign new member role
                 //await applicant.GrantRoleAsync(e.Guild.GetRole(1140406825943044246)); // Assign new member role
-                await applicant.ModifyAsync(e => e.Nickname = rsn); 
+                await applicant.ModifyAsync(e => e.Nickname = rsn);
             }
             else
             {

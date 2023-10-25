@@ -401,7 +401,7 @@ namespace DragonBot.Commands
                 await member.GrantRoleAsync(newRole);
                 var channel = ctx.Guild.GetChannel(1144424054984556595);
 
-                DiscordButtonComponent buttonDelete = new DiscordButtonComponent(ButtonStyle.Success, "deleteMessage", "Confirm Rank Updated Ingame");
+                DiscordButtonComponent buttonConfirm = new DiscordButtonComponent(ButtonStyle.Success, "confirmRankup", "Confirm Rank Updated Ingame");
                 DiscordMessageBuilder builder = new DiscordMessageBuilder();
                 DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
                 {
@@ -411,7 +411,7 @@ namespace DragonBot.Commands
                 embed.Description = $"Member {member.Mention} Rank changed to {newRole.Mention}";
 
                 builder.AddEmbed(embed);
-                builder.AddComponents(buttonDelete);
+                builder.AddComponents(buttonConfirm);
                 await channel.SendMessageAsync(builder).ConfigureAwait(false);
             }
         }
