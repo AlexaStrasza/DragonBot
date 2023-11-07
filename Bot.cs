@@ -221,7 +221,8 @@ namespace DragonBot
                 embedAccept.AddField("Application Details", fieldContext, true);
                 embedAccept.AddField("​​​​​\u200b", "​​​​​\u200b", true);
                 embedAccept.AddField("​​​​​\u200b", fieldValues, true);
-                embedAccept.AddField("Accepted On:", $"<t:{(int)DateTime.Now.Subtract(new DateTime(1970, 1, 1)).TotalSeconds}:D>\n", true);
+                embedAccept.AddField("Accepted On:", $"<t:{Helper.ConvertToUnixTimestamp(DateTime.Now)}:D>", true);
+                embedAccept.AddField("Accepted By:", $"{e.User.Mention}", true);
 
                 await e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder(new DiscordMessageBuilder().AddEmbed(embedAccept)));
 
@@ -301,9 +302,12 @@ namespace DragonBot
                 embedDeny.AddField("​​​​​\u200b", "​​​​​\u200b", true);
                 embedDeny.AddField("​​​​​\u200b", fieldValues, true);
 
-                DiscordButtonComponent buttonDelete = new DiscordButtonComponent(ButtonStyle.Danger, "deleteMessage", "Delete");
+                embedDeny.AddField("Denied On:", $"<t:{Helper.ConvertToUnixTimestamp(DateTime.Now)}:D>", true);
+                embedDeny.AddField("Denied By:", $"{e.User.Mention}", true);
+
+                //DiscordButtonComponent buttonDelete = new DiscordButtonComponent(ButtonStyle.Danger, "deleteMessage", "Delete");
                 var messageBuilder = new DiscordMessageBuilder();
-                messageBuilder.AddComponents(buttonDelete);
+                //messageBuilder.AddComponents(buttonDelete);
                 messageBuilder.AddEmbed(embedDeny);
                 await e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder(messageBuilder));
             }
