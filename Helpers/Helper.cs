@@ -55,6 +55,7 @@ namespace DragonBot.Helpers
             return member.Roles.Contains(guild.GetRole(1132893402204213351)) ||
                 member.Roles.Contains(guild.GetRole(1133071740797472808)) ||
                 member.Roles.Contains(guild.GetRole(1139575841228070972)) ||
+                member.Roles.Contains(guild.GetRole(1174393813968629822)) ||
                 member.Roles.Contains(guild.GetRole(1138108787128021073));
 
         }

@@ -1,6 +1,7 @@
 using Azure;
 using DragonBot.Attributes;
 using DragonBot.Context;
+using DragonBot.Enums;
 using DragonBot.Helpers;
 using DragonBot.Models;
 using DragonBot.Services;
@@ -28,7 +29,8 @@ using static DragonBot.Helpers.Enums;
 
 namespace DragonBot.Commands
 {
-    [SlashRequirePermissions(Permissions.Administrator)]
+    //[SlashRequirePermissions(Permissions.Administrator)]
+    [RequireStaffRank(StaffRanks.Dev, StaffRanks.Owner, StaffRanks.Admin, StaffRanks.Moderator)]
     public class AdminCommands : ApplicationCommandModule
     {
         private readonly IClanMemberService _memberService;
