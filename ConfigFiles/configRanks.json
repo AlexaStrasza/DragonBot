@@ -41,7 +41,16 @@
       "roleId": 1134194577679601674
     }
   ],
-  "weeklyHost": 50,
-  "weeklyAttendee": 25,
-  "weeklyLimit": 100
+  "weeklyHostPvP": 100,
+  "weeklyHostPvM": 50,
+  "weeklyHostRaids": 50,
+  "weeklyHostMisc": 25,
+  "weeklyAttendeePvP": 25,
+  "weeklyAttendeePvM": 25,
+  "weeklyAttendeeRaids": 25,
+  "weeklyAttendeeMisc": 25,
+  "weeklyLimitPvP": 100,
+  "weeklyLimitPvM": 100,
+  "weeklyLimitRaids": 100,
+  "weeklyLimitMisc": 50
 }

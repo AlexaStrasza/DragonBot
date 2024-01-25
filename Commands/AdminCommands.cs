@@ -162,15 +162,65 @@ namespace DragonBot.Commands
             int pointsToGive = 0;
             string embedDescription = "";
 
-            switch (tripAttendee)
+            int weeklyLimit = 0;
+            switch (tripType)
             {
-                case TripAttendeeType.Attendee:
-                    pointsToGive = _configRanks.WeeklyAttendeeRewardAmount;
-                    embedDescription = description + " - (Attendee)";
+                case TripType.PvmTrip:
+                    switch (tripAttendee)
+                    {
+                        case TripAttendeeType.Attendee:
+                            pointsToGive = _configRanks.WeeklyAttendeeRewardAmountPvM;
+                            embedDescription = description + " - (Attendee)";
+                            break;
+                        case TripAttendeeType.Host:
+                            pointsToGive = _configRanks.WeeklyHostRewardAmountPvM;
+                            embedDescription = description + " - (Hosting)";
+                            break;
+                    }
+
+                    weeklyLimit = _configRanks.WeeklyPointLimitPvM;
                     break;
-                case TripAttendeeType.Host:
-                    pointsToGive = _configRanks.WeeklyHostRewardAmount;
-                    embedDescription = description + " - (Hosting)";
+                case TripType.PkingTrip:
+                    switch (tripAttendee)
+                    {
+                        case TripAttendeeType.Attendee:
+                            pointsToGive = _configRanks.WeeklyAttendeeRewardAmountPvP;
+                            embedDescription = description + " - (Attendee)";
+                            break;
+                        case TripAttendeeType.Host:
+                            pointsToGive = _configRanks.WeeklyAttendeeRewardAmountPvP;
+                            embedDescription = description + " - (Hosting)";
+                            break;
+                    }
+                    weeklyLimit = _configRanks.WeeklyPointLimitPvP;
+                    break;
+                case TripType.Raiding:
+                    switch (tripAttendee)
+                    {
+                        case TripAttendeeType.Attendee:
+                            pointsToGive = _configRanks.WeeklyAttendeeRewardAmountRaids;
+                            embedDescription = description + " - (Attendee)";
+                            break;
+                        case TripAttendeeType.Host:
+                            pointsToGive = _configRanks.WeeklyAttendeeRewardAmountRaids;
+                            embedDescription = description + " - (Hosting)";
+                            break;
+                    }
+                    weeklyLimit = _configRanks.WeeklyPointLimitRaids;
+                    break;
+                case TripType.Misc:
+                    switch (tripAttendee)
+                    {
+                        case TripAttendeeType.Attendee:
+                            pointsToGive = _configRanks.WeeklyAttendeeRewardAmountMisc;
+                            embedDescription = description + " - (Attendee)";
+                            break;
+                        case TripAttendeeType.Host:
+                            pointsToGive = _configRanks.WeeklyAttendeeRewardAmountMisc;
+                            embedDescription = description + " - (Hosting)";
+                            break;
+                    }
+                    weeklyLimit = _configRanks.WeeklyPointLimitMisc;
                     break;
             }
 
@@ -197,7 +247,7 @@ namespace DragonBot.Commands
 
                     foreach (var user in messageResult.Result.MentionedUsers)
                     {
-                        PointDifferenceWeeklyViewModel difference = await _pointDistributionService.GrantWeeklyPoints(user.Id, pointsToGive, _configRanks.WeeklyPointLimit, tripType, embedDescription);
+                        PointDifferenceWeeklyViewModel difference = await _pointDistributionService.GrantWeeklyPoints(user.Id, pointsToGive, weeklyLimit, tripType, embedDescription);
 
                         if (!difference.errored)
                         {
@@ -205,7 +255,7 @@ namespace DragonBot.Commands
 
                             string change = $"+{difference.differenceViewModel.pointsChange}";
 
-                            if (difference.pointsThisWeek >= _configRanks.WeeklyPointLimit)
+                            if (difference.pointsThisWeek >= weeklyLimit)
                             {
                                 change += $" (point limit reached)";
                             }
@@ -294,19 +344,69 @@ namespace DragonBot.Commands
             int pointsToGive = 0;
             string infoDescription = "";
 
-            switch (tripAttendee)
+            int weeklyLimit = 0;
+            switch (tripType)
             {
-                case TripAttendeeType.Attendee:
-                    pointsToGive = _configRanks.WeeklyAttendeeRewardAmount;
-                    infoDescription = description + " - (Attendee)";
+                case TripType.PvmTrip:
+                    switch (tripAttendee)
+                    {
+                        case TripAttendeeType.Attendee:
+                            pointsToGive = _configRanks.WeeklyAttendeeRewardAmountPvM;
+                            infoDescription = description + " - (Attendee)";
+                            break;
+                        case TripAttendeeType.Host:
+                            pointsToGive = _configRanks.WeeklyHostRewardAmountPvM;
+                            infoDescription = description + " - (Hosting)";
+                            break;
+                    }
+                    weeklyLimit = _configRanks.WeeklyPointLimitPvM;
                     break;
-                case TripAttendeeType.Host:
-                    pointsToGive = _configRanks.WeeklyHostRewardAmount;
-                    infoDescription = description + " - (Hosting)";
+                case TripType.PkingTrip:
+                    switch (tripAttendee)
+                    {
+                        case TripAttendeeType.Attendee:
+                            pointsToGive = _configRanks.WeeklyAttendeeRewardAmountPvP;
+                            infoDescription = description + " - (Attendee)";
+                            break;
+                        case TripAttendeeType.Host:
+                            pointsToGive = _configRanks.WeeklyAttendeeRewardAmountPvP;
+                            infoDescription = description + " - (Hosting)";
+                            break;
+                    }
+                    weeklyLimit = _configRanks.WeeklyPointLimitPvP;
+                    break;
+                case TripType.Raiding:
+                    switch (tripAttendee)
+                    {
+                        case TripAttendeeType.Attendee:
+                            pointsToGive = _configRanks.WeeklyAttendeeRewardAmountRaids;
+                            infoDescription = description + " - (Attendee)";
+                            break;
+                        case TripAttendeeType.Host:
+                            pointsToGive = _configRanks.WeeklyAttendeeRewardAmountRaids;
+                            infoDescription = description + " - (Hosting)";
+                            break;
+                    }
+                    weeklyLimit = _configRanks.WeeklyPointLimitRaids;
+                    break;
+                case TripType.Misc:
+                    switch (tripAttendee)
+                    {
+                        case TripAttendeeType.Attendee:
+                            pointsToGive = _configRanks.WeeklyAttendeeRewardAmountMisc;
+                            infoDescription = description + " - (Attendee)";
+                            break;
+                        case TripAttendeeType.Host:
+                            pointsToGive = _configRanks.WeeklyAttendeeRewardAmountMisc;
+                            infoDescription = description + " - (Hosting)";
+                            break;
+                    }
+                    weeklyLimit = _configRanks.WeeklyPointLimitMisc;
                     break;
             }
+                            
 
-            PointDifferenceWeeklyViewModel difference = await _pointDistributionService.GrantWeeklyPoints(user.Id, pointsToGive, _configRanks.WeeklyPointLimit, tripType, infoDescription).ConfigureAwait(false);
+            PointDifferenceWeeklyViewModel difference = await _pointDistributionService.GrantWeeklyPoints(user.Id, pointsToGive, weeklyLimit, tripType, infoDescription).ConfigureAwait(false);
 
             if (!difference.errored)
             {
@@ -314,7 +414,7 @@ namespace DragonBot.Commands
 
                 string change = $"+{difference.differenceViewModel.pointsChange}";
 
-                if (difference.pointsThisWeek >= _configRanks.WeeklyPointLimit)
+                if (difference.pointsThisWeek >= weeklyLimit)
                 {
                     change += $" (point limit reached)";
                 }

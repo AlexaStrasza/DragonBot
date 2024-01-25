@@ -264,6 +264,64 @@ namespace DragonBot
                                 differenceViewModel = difference
                             };
                         }
+                    case TripType.Misc:
+                        int maxPointsAllowedMisc = 0;
+                        if (Helper.IsSameWeek(member.LastUpdateMisc, DateTime.Now))
+                        {
+                            if (member.WeekPointsMisc >= weeklyLimit) maxPointsAllowedMisc = 0;
+                            else if (member.WeekPointsMisc + amount > weeklyLimit)
+                            {
+                                // Gives remainder of allowed points
+                                maxPointsAllowedMisc = 100 - member.WeekPointsMisc;
+                            }
+                            else maxPointsAllowedMisc = weeklyLimit;
+                        }
+                        else
+                        {
+                            member.WeekPointsMisc = 0;
+                            maxPointsAllowedMisc = weeklyLimit;
+                        }
+
+                        if (maxPointsAllowedMisc == 0)
+                        {
+                            // at or over limit do not grant points, give error response
+                            return new PointDifferenceWeeklyViewModel()
+                            {
+                                errored = false,
+                                note = "Weekly point limit for Miscellaneous reached.",
+                                pointsThisWeek = member.WeekPointsMisc,
+                                differenceViewModel = new PointDifferenceViewModel()
+                                {
+                                    pointsChange = 0,
+                                    pointsOld = member.ClanPoints,
+                                    pointsNew = member.ClanPoints
+                                }
+                            };
+                        }
+                        else
+                        {
+                            int pointsToGive = 0;
+                            // not at limit yet, grant as many as limit allows
+                            if (amount > maxPointsAllowedMisc)
+                                pointsToGive = maxPointsAllowedMisc;
+                            else
+                                pointsToGive = amount;
+
+                            member.WeekPointsMisc += pointsToGive;
+                            member.LastUpdateMisc = DateTime.Now;
+                            context.ClanMembers.Update(member);
+                            await context.SaveChangesAsync().ConfigureAwait(false);
+
+                            PointDifferenceViewModel difference = await ChangePointsAsync(discordId, pointsToGive, description);
+
+                            return new PointDifferenceWeeklyViewModel()
+                            {
+                                errored = false,
+                                note = "success",
+                                pointsThisWeek = member.WeekPointsMisc,
+                                differenceViewModel = difference
+                            };
+                        }
                 }
 
                 return new PointDifferenceWeeklyViewModel()

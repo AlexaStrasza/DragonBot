@@ -16,7 +16,9 @@ namespace DragonBot.Helpers
             [ChoiceName("Pking Trip")]
             PkingTrip,
             [ChoiceName("Raiding")]
-            Raiding
+            Raiding,
+            [ChoiceName("Miscellaneous")]
+            Misc
         }
 
         public enum TripAttendeeType
