@@ -188,7 +188,7 @@ namespace DragonBot.Commands
                             embedDescription = description + " - (Attendee)";
                             break;
                         case TripAttendeeType.Host:
-                            pointsToGive = _configRanks.WeeklyAttendeeRewardAmountPvP;
+                            pointsToGive = _configRanks.WeeklyHostRewardAmountPvP;
                             embedDescription = description + " - (Hosting)";
                             break;
                     }
@@ -202,7 +202,7 @@ namespace DragonBot.Commands
                             embedDescription = description + " - (Attendee)";
                             break;
                         case TripAttendeeType.Host:
-                            pointsToGive = _configRanks.WeeklyAttendeeRewardAmountRaids;
+                            pointsToGive = _configRanks.WeeklyHostRewardAmountRaids;
                             embedDescription = description + " - (Hosting)";
                             break;
                     }
@@ -216,7 +216,7 @@ namespace DragonBot.Commands
                             embedDescription = description + " - (Attendee)";
                             break;
                         case TripAttendeeType.Host:
-                            pointsToGive = _configRanks.WeeklyAttendeeRewardAmountMisc;
+                            pointsToGive = _configRanks.WeeklyHostRewardAmountMisc;
                             embedDescription = description + " - (Hosting)";
                             break;
                     }
@@ -369,7 +369,7 @@ namespace DragonBot.Commands
                             infoDescription = description + " - (Attendee)";
                             break;
                         case TripAttendeeType.Host:
-                            pointsToGive = _configRanks.WeeklyAttendeeRewardAmountPvP;
+                            pointsToGive = _configRanks.WeeklyHostRewardAmountPvP;
                             infoDescription = description + " - (Hosting)";
                             break;
                     }
@@ -383,7 +383,7 @@ namespace DragonBot.Commands
                             infoDescription = description + " - (Attendee)";
                             break;
                         case TripAttendeeType.Host:
-                            pointsToGive = _configRanks.WeeklyAttendeeRewardAmountRaids;
+                            pointsToGive = _configRanks.WeeklyHostRewardAmountRaids;
                             infoDescription = description + " - (Hosting)";
                             break;
                     }
@@ -397,7 +397,7 @@ namespace DragonBot.Commands
                             infoDescription = description + " - (Attendee)";
                             break;
                         case TripAttendeeType.Host:
-                            pointsToGive = _configRanks.WeeklyAttendeeRewardAmountMisc;
+                            pointsToGive = _configRanks.WeeklyHostRewardAmountMisc;
                             infoDescription = description + " - (Hosting)";
                             break;
                     }
